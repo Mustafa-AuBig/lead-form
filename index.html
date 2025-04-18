@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Lead Fetch Form</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 500px;
+      margin: 50px auto;
+    }
+    label {
+      font-weight: bold;
+    }
+    input, select {
+      width: 100%;
+      padding: 8px;
+      margin: 8px 0 20px;
+      box-sizing: border-box;
+    }
+    #error-message {
+      color: red;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <h2>Lead Info Form</h2>
+  <form id="leadForm">
+    <label>Full Name:</label>
+    <input type="text" id="firstName" placeholder="First Name" />
+    <input type="text" id="lastName" placeholder="Last Name" />
+
+    <label>Phone Number:</label>
+    <input type="text" id="phone" />
+
+    <label>Email:</label>
+    <input type="email" id="email" />
+
+    <label>Interaction Type:</label>
+    <select id="interactionType" disabled>
+      <option value="Inbound">Inbound</option>
+      <option value="Outbound">Outbound</option>
+    </select>
+
+    <button type="submit">Submit</button>
+    <p id="error-message">No records found.</p>
+  </form>
+
+  <script>
+    // ✅ Use your latest access token here
+    const accessToken = "1000.c3d74f08bcadeabd8fd5d16546e9726e.4c4aa262cd87d57c63e3dacbca79643c";
+
+    // 🔄 Simulated Qvoice Events — Replace with actual call triggers
+    setTimeout(() => {
+      // onIncomingCall('+94771234567'); // simulate incoming
+      onOutboundCall('+94771234567'); // simulate outbound
+    }, 2000);
+
+    function onIncomingCall(phoneNumber) {
+      document.getElementById('phone').value = phoneNumber;
+      document.getElementById('interactionType').value = 'Inbound';
+      fetchCRMData(phoneNumber);
+    }
+
+    function onOutboundCall(phoneNumber) {
+      document.getElementById('phone').value = phoneNumber;
+      document.getElementById('interactionType').value = 'Outbound';
+      fetchCRMData(phoneNumber);
+    }
+
+    async function fetchCRMData(phoneNumber) {
+      const apiUrl = `https://www.zohoapis.com/crm/v2/Contacts/search?phone=${encodeURIComponent(phoneNumber)}`;
+
+      try {
+        const res = await fetch(apiUrl, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Zoho-oauthtoken ${accessToken}`
+          }
+        });
+
+        const data = await res.json();
+
+        if (data && data.data && data.data.length > 0) {
+          const contact = data.data[0];
+          document.getElementById('firstName').value = contact.First_Name || '';
+          document.getElementById('lastName').value = contact.Last_Name || '';
+          document.getElementById('email').value = contact.Email || '';
+          document.getElementById('error-message').style.display = 'none';
+        } else {
+          document.getElementById('error-message').style.display = 'block';
+        }
+      } catch (err) {
+        console.error('Zoho API error:', err);
+        document.getElementById('error-message').innerText = 'Error fetching data';
+        document.getElementById('error-message').style.display = 'block';
+      }
+    }
+  </script>
+</body>
+</html>
