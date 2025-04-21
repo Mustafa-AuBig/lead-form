@@ -31,7 +31,7 @@
     <input type="text" id="lastName" placeholder="Last Name" />
 
     <label>Phone Number:</label>
-    <input type="text" id="phone" readonly />
+    <input type="text" id="phone" />
 
     <label>Email:</label>
     <input type="email" id="email" />
@@ -47,11 +47,10 @@
   </form>
 
   <script>
-    const accessToken = '<YOUR_ACCESS_TOKEN>'; // Replace this with your valid Zoho token
+    // 🟡 STEP 1: Your Zoho Access Token
+    const accessToken = '<YOUR_ACCESS_TOKEN>'; // Replace this
 
-    /**
-     * Fetch CRM data based on phone number
-     */
+    // 🔗 STEP 2: Fetch Zoho Contact Details by Phone
     async function fetchCRMData(phoneNumber) {
       const apiUrl = `https://www.zohoapis.com/crm/v2/Contacts/search?phone=${encodeURIComponent(phoneNumber)}`;
 
@@ -81,26 +80,26 @@
       }
     }
 
-    /**
-     * Listen for messages from Qvoice iframe
-     */
+    // 🟢 STEP 3: Listen for Qvoice call events
     window.addEventListener("message", function (event) {
-      // Uncomment the next line if you want to restrict messages to Qvoice only
+      // OPTIONAL SECURITY: if you want, uncomment the next line and set the exact origin
       // if (event.origin !== "https://qvoice.dialog.lk") return;
 
       const data = event.data;
 
-      // Qvoice must send an object like: { phone: '+9477xxxxxxx', direction: 'inbound' | 'outbound' }
       if (data && data.phone && data.direction) {
-        document.getElementById('phone').value = data.phone;
+        const phoneNumber = data.phone;
+        const direction = data.direction.toLowerCase(); // 'inbound' or 'outbound'
 
-        if (data.direction === 'inbound') {
+        document.getElementById('phone').value = phoneNumber;
+
+        if (direction === 'inbound') {
           document.getElementById('interactionType').value = 'Inbound';
-        } else if (data.direction === 'outbound') {
+        } else if (direction === 'outbound') {
           document.getElementById('interactionType').value = 'Outbound';
         }
 
-        fetchCRMData(data.phone);
+        fetchCRMData(phoneNumber);
       }
     });
   </script>
