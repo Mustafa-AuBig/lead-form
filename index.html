@@ -31,7 +31,7 @@
     <input type="text" id="lastName" placeholder="Last Name" />
 
     <label>Phone Number:</label>
-    <input type="text" id="phone" />
+    <input type="text" id="phone" readonly />
 
     <label>Email:</label>
     <input type="email" id="email" />
@@ -47,27 +47,11 @@
   </form>
 
   <script>
-    // ✅ Use your latest access token here
-    const accessToken = "1000.c3d74f08bcadeabd8fd5d16546e9726e.4c4aa262cd87d57c63e3dacbca79643c";
+    const accessToken = '<YOUR_ACCESS_TOKEN>'; // Replace this with your valid Zoho token
 
-    // 🔄 Simulated Qvoice Events — Replace with actual call triggers
-    setTimeout(() => {
-      // onIncomingCall('+94771234567'); // simulate incoming
-      onOutboundCall('+94771234567'); // simulate outbound
-    }, 2000);
-
-    function onIncomingCall(phoneNumber) {
-      document.getElementById('phone').value = phoneNumber;
-      document.getElementById('interactionType').value = 'Inbound';
-      fetchCRMData(phoneNumber);
-    }
-
-    function onOutboundCall(phoneNumber) {
-      document.getElementById('phone').value = phoneNumber;
-      document.getElementById('interactionType').value = 'Outbound';
-      fetchCRMData(phoneNumber);
-    }
-
+    /**
+     * Fetch CRM data based on phone number
+     */
     async function fetchCRMData(phoneNumber) {
       const apiUrl = `https://www.zohoapis.com/crm/v2/Contacts/search?phone=${encodeURIComponent(phoneNumber)}`;
 
@@ -96,6 +80,29 @@
         document.getElementById('error-message').style.display = 'block';
       }
     }
+
+    /**
+     * Listen for messages from Qvoice iframe
+     */
+    window.addEventListener("message", function (event) {
+      // Uncomment the next line if you want to restrict messages to Qvoice only
+      // if (event.origin !== "https://qvoice.dialog.lk") return;
+
+      const data = event.data;
+
+      // Qvoice must send an object like: { phone: '+9477xxxxxxx', direction: 'inbound' | 'outbound' }
+      if (data && data.phone && data.direction) {
+        document.getElementById('phone').value = data.phone;
+
+        if (data.direction === 'inbound') {
+          document.getElementById('interactionType').value = 'Inbound';
+        } else if (data.direction === 'outbound') {
+          document.getElementById('interactionType').value = 'Outbound';
+        }
+
+        fetchCRMData(data.phone);
+      }
+    });
   </script>
 </body>
 </html>
